@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mimari Teklif ve Kâr Hesaplayıcı</title>
+    <style>
+        :root {
+            --primary: #2C3E50;
+            --secondary: #34495E;
+            --accent: #3498DB;
+            --success: #27AE60;
+            --warning: #F39C12;
+            --bg: #F5F7FA;
+            --card-bg: #FFFFFF;
+            --text: #333333;
+            --border: #E0E6ED;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { background-color: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+        
+        .container { max-width: 800px; width: 100%; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        
+        h1 { color: var(--primary); text-align: center; margin-bottom: 25px; font-size: 24px; border-bottom: 2px solid var(--border); padding-bottom: 15px; }
+        
+        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        @media (max-width: 600px) { .grid-layout { grid-template-columns: 1fr; } }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--secondary); font-size: 14px; }
+        
+        input[type="number"], input[type="range"] { width: 100%; }
+        input[type="number"] { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 16px; }
+        
+        .range-header { display: flex; justify-content: space-between; align-items: center; }
+        .range-value { font-weight: bold; color: var(--accent); }
+
+        .checkbox-group { display: flex; flex-direction: column; gap: 10px; background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .checkbox-item { display: flex; align-items: center; justify-content: space-between; font-size: 14px; }
+        .checkbox-item label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; margin: 0; color: var(--text); }
+        .checkbox-item span { color: var(--secondary); font-size: 12px; font-weight: bold; }
+
+        .results-panel { background: var(--primary); color: white; padding: 25px; border-radius: 10px; margin-top: 30px; }
+        .total-quote { text-align: center; margin-bottom: 25px; }
+        .total-quote h2 { font-size: 16px; font-weight: normal; opacity: 0.9; margin-bottom: 5px; }
+        .total-quote .amount { font-size: 36px; font-weight: bold; color: #fff; }
+
+        .breakdown { display: flex; flex-direction: column; gap: 10px; }
+        .breakdown-item { display: flex; justify-content: space-between; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+        .breakdown-item:last-child { border: none; }
+        
+        .chart-container { width: 100%; height: 24px; border-radius: 12px; display: flex; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
+        .chart-segment { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; transition: width 0.3s ease; }
+        
+        footer { margin-top: 30px; text-align: center; font-size: 12px; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Mimari Teklif & Kâr Hesaplayıcı</h1>
+    
+    <div class="grid-layout">
+        <!-- Sol Panel: Girdiler -->
+        <div class="inputs-panel">
+            <div class="input-group">
+                <label>Toplam İnşaat Alanı (m²)</label>
+                <input type="number" id="area" value="500" min="1" step="50">
+            </div>
+
+            <div class="input-group">
+                <label>m² Taban Birim Maliyeti (₺)</label>
+                <input type="number" id="unitCost" value="800" min="1" step="50">
+            </div>
+
+            <div class="input-group">
+                <div class="range-header">
+                    <label>Hedeflenen Net Kâr Marjı</label>
+                    <span class="range-value" id="profitVal">%30</span>
+                </div>
+                <input type="range" id="profitMargin" value="30" min="5" max="100" step="1">
+            </div>
+
+            <div class="input-group">
+                <label>Hizmet Kapsamı Seçimi</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <label><input type="checkbox" class="scope-cb" value="0.20" checked> Avan / Konsept Proje</label>
+                        <span>%20</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <label><input type="checkbox" class="scope-cb" value="0.30" checked> Ruhsat Projesi</label>
+                        <span>%30</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <label><input type="checkbox" class="scope-cb" value="0.40"> Uygulama Projesi ve Detaylar</label>
+                        <span>%40</span>
+                    </div>
+                    <div class="checkbox-item">
+                        <label><input type="checkbox" class="scope-cb" value="0.10"> Mahal Listesi ve İhale Dosyası</label>
+                        <span>%10</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Panel: Sonuçlar -->
+        <div class="results-panel">
+            <div class="total-quote">
+                <h2>Nihai Müşteri Teklifi (KDV Hariç)</h2>
+                <div class="amount" id="finalQuoteText">0 ₺</div>
+            </div>
+
+            <div class="breakdown">
+                <div class="breakdown-item">
+                    <span>Hesaba Katılan Kapsam Oranı:</span>
+                    <strong id="totalScopeText">%50</strong>
+                </div>
+                <div class="breakdown-item">
+                    <span>Doğrudan İşçilik (Çizim/Tasarım):</span>
+                    <strong id="laborCostText">0 ₺</strong>
+                </div>
+                <div class="breakdown-item">
+                    <span>Genel Giderler (%30 Sabit):</span>
+                    <strong id="overheadText">0 ₺</strong>
+                </div>
+                <div class="breakdown-item" style="color: var(--warning);">
+                    <span>Ofis Net Kârı:</span>
+                    <strong id="netProfitText">0 ₺</strong>
+                </div>
+            </div>
+
+            <!-- Görsel Bar Grafiği -->
+            <div class="chart-container" title="Maliyet ve Kâr Dağılımı">
+                <div id="barLabor" class="chart-segment" style="background-color: var(--accent); width: 45%;">İşçilik</div>
+                <div id="barOverhead" class="chart-segment" style="background-color: #95A5A6; width: 25%;">Gider</div>
+                <div id="barProfit" class="chart-segment" style="background-color: var(--warning); width: 30%;">Kâr</div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        Geliştirici: Yakup Daşdemir | Özel Mimari Yazılım Çözümleri
+    </footer>
+</div>
+
+<script>
+    // DOM Elementlerini Seçme
+    const areaInput = document.getElementById('area');
+    const unitCostInput = document.getElementById('unitCost');
+    const profitSlider = document.getElementById('profitMargin');
+    const profitVal = document.getElementById('profitVal');
+    const scopeCheckboxes = document.querySelectorAll('.scope-cb');
+
+    // Formatlayıcı
+    const formatTRY = (num) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(num);
+
+    function calculate() {
+        // Değerleri Al
+        const area = parseFloat(areaInput.value) || 0;
+        const unitCost = parseFloat(unitCostInput.value) || 0;
+        const profitRate = parseFloat(profitSlider.value) / 100;
+        profitVal.textContent = '%' + profitSlider.value;
+
+        // Kapsam Yüzdesini Hesapla
+        let selectedScope = 0;
+        scopeCheckboxes.forEach(cb => { if(cb.checked) selectedScope += parseFloat(cb.value); });
+        
+        // --- Çekirdek Algoritma ---
+        const baseProjectCost = area * unitCost; // 1. Taban Maliyet
+        const overheadFixedRate = 0.30; // Genel giderler için %30 sabit eklenti
+        
+        // İşçilik ve Genel Giderlerin Tam Kapsam Maliyeti
+        const totalFullCost = baseProjectCost + (baseProjectCost * overheadFixedRate); 
+        
+        // Seçilen Kapsama Göre İndirgenmiş Maliyetler
+        const scopeTotalCost = totalFullCost * selectedScope;
+        const laborCost = (baseProjectCost * selectedScope);
+        const overheadCost = (baseProjectCost * overheadFixedRate) * selectedScope;
+        
+        // Kâr Hesabı ve Nihai Teklif
+        const netProfit = scopeTotalCost * profitRate;
+        const finalQuote = scopeTotalCost + netProfit;
+
+        // --- Arayüzü Güncelle ---
+        document.getElementById('totalScopeText').textContent = '%' + Math.round(selectedScope * 100);
+        document.getElementById('finalQuoteText').textContent = formatTRY(finalQuote);
+        document.getElementById('laborCostText').textContent = formatTRY(laborCost);
+        document.getElementById('overheadText').textContent = formatTRY(overheadCost);
+        document.getElementById('netProfitText').textContent = formatTRY(netProfit);
+
+        // Görsel Bar Grafiği Güncelleme (Yüzdeler)
+        if (finalQuote > 0) {
+            document.getElementById('barLabor').style.width = (laborCost / finalQuote * 100) + '%';
+            document.getElementById('barOverhead').style.width = (overheadCost / finalQuote * 100) + '%';
+            document.getElementById('barProfit').style.width = (netProfit / finalQuote * 100) + '%';
+        } else {
+            document.getElementById('barLabor').style.width = '0%';
+            document.getElementById('barOverhead').style.width = '0%';
+            document.getElementById('barProfit').style.width = '0%';
+        }
+    }
+
+    // Event Listener'ları Ekle
+    [areaInput, unitCostInput, profitSlider].forEach(el => {
+        el.addEventListener('input', calculate);
+    });
+    scopeCheckboxes.forEach(cb => {
+        cb.addEventListener('change', calculate);
+    });
+
+    // İlk Yüklemede Hesapla
+    calculate();
+</script>
+
+</body>
+</html>
