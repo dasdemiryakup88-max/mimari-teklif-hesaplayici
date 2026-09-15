@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mimari Teklif ve Kâr Hesaplayıcı</title>
+    <!-- PDF oluşturmak için html2pdf.js kütüphanesi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary: #2C3E50;
@@ -54,12 +56,33 @@
         .chart-container { width: 100%; height: 24px; border-radius: 12px; display: flex; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
         .chart-segment { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; transition: width 0.3s ease; }
         
+        /* PDF Butonu Stilleri */
+        .download-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .download-btn:hover { background-color: #219A52; }
+        .download-btn svg { width: 20px; height: 20px; fill: white; }
+
         footer { margin-top: 30px; text-align: center; font-size: 12px; color: #7f8c8d; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="pdf-content">
     <h1>Mimari Teklif & Kâr Hesaplayıcı</h1>
     
     <div class="grid-layout">
@@ -138,6 +161,12 @@
                 <div id="barOverhead" class="chart-segment" style="background-color: #95A5A6; width: 25%;">Gider</div>
                 <div id="barProfit" class="chart-segment" style="background-color: var(--warning); width: 30%;">Kâr</div>
             </div>
+            
+            <!-- PDF İndir Butonu -->
+            <button id="downloadPdfBtn" class="download-btn">
+                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                Teklifi PDF Olarak İndir
+            </button>
         </div>
     </div>
     
@@ -153,6 +182,7 @@
     const profitSlider = document.getElementById('profitMargin');
     const profitVal = document.getElementById('profitVal');
     const scopeCheckboxes = document.querySelectorAll('.scope-cb');
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
 
     // Formatlayıcı
     const formatTRY = (num) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(num);
@@ -202,6 +232,29 @@
             document.getElementById('barProfit').style.width = '0%';
         }
     }
+
+    // PDF Oluşturma Fonksiyonu
+    downloadPdfBtn.addEventListener('click', () => {
+        const element = document.getElementById('pdf-content');
+        
+        // PDF'te butonun görünmemesi için geçici olarak gizle
+        downloadPdfBtn.style.display = 'none';
+
+        // html2pdf ayarları
+        const opt = {
+            margin:       10,
+            filename:     'Mimari_Teklif_Yakup_Dasdemir.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // PDF'i oluştur ve kaydet
+        html2pdf().set(opt).from(element).save().then(() => {
+            // İndirme tamamlandıktan sonra butonu tekrar görünür yap
+            downloadPdfBtn.style.display = 'flex';
+        });
+    });
 
     // Event Listener'ları Ekle
     [areaInput, unitCostInput, profitSlider].forEach(el => {
