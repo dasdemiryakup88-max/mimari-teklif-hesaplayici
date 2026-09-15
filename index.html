@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mimari Teklif ve Kâr Hesaplayıcı</title>
-    <!-- PDF oluşturmak için html2pdf.js kütüphanesi -->
+    <!-- html2pdf.js Kütüphanesi -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
@@ -23,70 +23,76 @@
         
         body { background-color: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
         
-        .container { max-width: 800px; width: 100%; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        /* ARAYÜZ TASARIMI (Burası sadece senin gördüğün ekran) */
+        .app-container { max-width: 900px; width: 100%; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
         
-        h1 { color: var(--primary); text-align: center; margin-bottom: 25px; font-size: 24px; border-bottom: 2px solid var(--border); padding-bottom: 15px; }
+        .header-title { display: flex; align-items: center; justify-content: center; gap: 15px; color: var(--primary); margin-bottom: 25px; border-bottom: 2px solid var(--border); padding-bottom: 15px; }
+        .header-title svg { width: 32px; height: 32px; fill: var(--primary); }
         
-        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        @media (max-width: 600px) { .grid-layout { grid-template-columns: 1fr; } }
+        .grid-layout { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 30px; }
+        @media (max-width: 768px) { .grid-layout { grid-template-columns: 1fr; } }
 
-        .input-group { margin-bottom: 20px; }
+        .input-group { margin-bottom: 18px; }
         .input-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--secondary); font-size: 14px; }
         
-        input[type="number"], input[type="range"] { width: 100%; }
-        input[type="number"] { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 16px; }
+        input[type="number"], input[type="range"], select { width: 100%; }
+        input[type="number"], select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 15px; outline: none; }
+        select:focus, input[type="number"]:focus { border-color: var(--accent); }
         
         .range-header { display: flex; justify-content: space-between; align-items: center; }
         .range-value { font-weight: bold; color: var(--accent); }
 
-        .checkbox-group { display: flex; flex-direction: column; gap: 10px; background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .checkbox-group { display: flex; flex-direction: column; gap: 8px; background: var(--bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
         .checkbox-item { display: flex; align-items: center; justify-content: space-between; font-size: 14px; }
         .checkbox-item label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; margin: 0; color: var(--text); }
         .checkbox-item span { color: var(--secondary); font-size: 12px; font-weight: bold; }
 
-        .results-panel { background: var(--primary); color: white; padding: 25px; border-radius: 10px; margin-top: 30px; }
-        .total-quote { text-align: center; margin-bottom: 25px; }
-        .total-quote h2 { font-size: 16px; font-weight: normal; opacity: 0.9; margin-bottom: 5px; }
-        .total-quote .amount { font-size: 36px; font-weight: bold; color: #fff; }
+        .results-panel { background: var(--primary); color: white; padding: 25px; border-radius: 10px; display: flex; flex-direction: column; }
+        
+        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 14px; }
+        .result-row.grand-total { border-bottom: none; border-top: 2px solid rgba(255,255,255,0.3); padding-top: 15px; margin-top: 10px; font-size: 20px; font-weight: bold; color: #fff; }
+        
+        .internal-badge { background: var(--warning); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 8px; letter-spacing: 0.5px;}
 
-        .breakdown { display: flex; flex-direction: column; gap: 10px; }
-        .breakdown-item { display: flex; justify-content: space-between; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
-        .breakdown-item:last-child { border: none; }
-        
-        .chart-container { width: 100%; height: 24px; border-radius: 12px; display: flex; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
-        .chart-segment { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; transition: width 0.3s ease; }
-        
-        /* PDF Butonu Stilleri */
-        .download-btn {
-            width: 100%;
-            padding: 14px;
-            margin-top: 20px;
-            background-color: var(--success);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .download-btn:hover { background-color: #219A52; }
+        .download-btn { width: 100%; padding: 15px; margin-top: auto; background-color: var(--success); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
+        .download-btn:hover { background-color: #219A52; transform: translateY(-1px); }
         .download-btn svg { width: 20px; height: 20px; fill: white; }
 
         footer { margin-top: 30px; text-align: center; font-size: 12px; color: #7f8c8d; }
+
+        /* MÜŞTERİ PDF ŞABLONU (Ekranda Gizli, Sadece PDF Çıktısında Görünür) */
+        #pdf-template-wrapper { position: absolute; left: -9999px; top: 0; z-index: -100; }
+        #pdf-template { width: 210mm; min-height: 297mm; padding: 25mm 20mm; background: #ffffff; color: #333333; font-family: 'Helvetica', 'Arial', sans-serif; box-sizing: border-box; }
+        .pdf-header { display: flex; align-items: center; border-bottom: 3px solid #2C3E50; padding-bottom: 20px; margin-bottom: 40px; }
+        .pdf-header-icon { width: 60px; height: 60px; fill: #2C3E50; margin-right: 20px; }
+        .pdf-brand h1 { margin: 0; font-size: 28px; color: #2C3E50; letter-spacing: 1px; }
+        .pdf-brand p { margin: 5px 0 0 0; font-size: 14px; color: #7f8c8d; font-weight: 600; letter-spacing: 2px; }
+        .pdf-meta { margin-left: auto; text-align: right; }
+        .pdf-meta h2 { margin: 0; font-size: 20px; color: #3498DB; }
+        .pdf-meta p { margin: 5px 0 0 0; font-size: 14px; color: #7f8c8d; }
+        .pdf-section-title { font-size: 18px; color: #2C3E50; border-bottom: 1px solid #E0E6ED; padding-bottom: 8px; margin-bottom: 20px; margin-top: 30px; }
+        .pdf-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 15px; }
+        .pdf-table td { padding: 12px 0; border-bottom: 1px solid #f1f2f6; }
+        .pdf-table td:last-child { text-align: right; font-weight: bold; }
+        .pdf-grand-row td { background-color: #F5F7FA; padding: 15px 10px; font-size: 18px; color: #2C3E50; border: none; border-radius: 6px;}
+        .pdf-grand-row td:last-child { color: #27AE60; }
+        ul.pdf-scope-list { padding-left: 20px; margin-bottom: 30px; }
+        ul.pdf-scope-list li { margin-bottom: 10px; font-size: 15px; color: #444; line-height: 1.5; }
+        .pdf-footer { margin-top: 80px; text-align: center; font-size: 12px; color: #7f8c8d; border-top: 1px solid #E0E6ED; padding-top: 20px; line-height: 1.6; }
     </style>
 </head>
 <body>
 
-<div class="container" id="pdf-content">
-    <h1>Mimari Teklif & Kâr Hesaplayıcı</h1>
+<!-- 1. GÖRÜNÜR ARAYÜZ (YAKUP İÇİN KONTROL PANELİ) -->
+<div class="app-container">
+    <div class="header-title">
+        <!-- Mimari İkon -->
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2zm0 2.83L19.17 12h-2.17v6h-2v-4h-6v4H7v-6H4.83L12 4.83z"/></svg>
+        <h1>Proje Maliyet & Teklif Merkezi</h1>
+    </div>
     
     <div class="grid-layout">
-        <!-- Sol Panel: Girdiler -->
+        <!-- Sol Panel -->
         <div class="inputs-panel">
             <div class="input-group">
                 <label>Toplam İnşaat Alanı (m²)</label>
@@ -94,177 +100,263 @@
             </div>
 
             <div class="input-group">
-                <label>m² Taban Birim Maliyeti (₺)</label>
+                <label>m² Taban Birim Maliyeti (₺) <span class="internal-badge">MÜŞTERİ GÖRMEZ</span></label>
                 <input type="number" id="unitCost" value="800" min="1" step="50">
             </div>
 
             <div class="input-group">
                 <div class="range-header">
-                    <label>Hedeflenen Net Kâr Marjı</label>
+                    <label>Hedeflenen Net Kâr Marjı <span class="internal-badge">MÜŞTERİ GÖRMEZ</span></label>
                     <span class="range-value" id="profitVal">%30</span>
                 </div>
                 <input type="range" id="profitMargin" value="30" min="5" max="100" step="1">
             </div>
 
             <div class="input-group">
+                <label>KDV Oranı</label>
+                <select id="vatRate">
+                    <option value="0">KDV Hariç</option>
+                    <option value="0.10">%10 KDV</option>
+                    <option value="0.20" selected>%20 KDV</option>
+                </select>
+            </div>
+
+            <div class="input-group">
                 <label>Hizmet Kapsamı Seçimi</label>
-                <div class="checkbox-group">
+                <div class="checkbox-group" id="scopeContainer">
                     <div class="checkbox-item">
-                        <label><input type="checkbox" class="scope-cb" value="0.20" checked> Avan / Konsept Proje</label>
+                        <label><input type="checkbox" class="scope-cb" value="0.20" data-name="Avan / Konsept Proje Tasarımı" checked> Avan / Konsept Proje</label>
                         <span>%20</span>
                     </div>
                     <div class="checkbox-item">
-                        <label><input type="checkbox" class="scope-cb" value="0.30" checked> Ruhsat Projesi</label>
+                        <label><input type="checkbox" class="scope-cb" value="0.30" data-name="Ruhsat Projesi Çizimleri ve Resmî Onay Süreçleri" checked> Ruhsat Projesi</label>
                         <span>%30</span>
                     </div>
                     <div class="checkbox-item">
-                        <label><input type="checkbox" class="scope-cb" value="0.40"> Uygulama Projesi ve Detaylar</label>
+                        <label><input type="checkbox" class="scope-cb" value="0.40" data-name="Uygulama Projesi ve İmalat Detaylarının Hazırlanması"> Uygulama Projesi ve Detaylar</label>
                         <span>%40</span>
                     </div>
                     <div class="checkbox-item">
-                        <label><input type="checkbox" class="scope-cb" value="0.10"> Mahal Listesi ve İhale Dosyası</label>
+                        <label><input type="checkbox" class="scope-cb" value="0.10" data-name="Mahal Listeleri, Metraj ve İhale Dosyası Hazırlığı"> Mahal Listesi ve İhale Dosyası</label>
                         <span>%10</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Sağ Panel: Sonuçlar -->
+        <!-- Sağ Panel -->
         <div class="results-panel">
-            <div class="total-quote">
-                <h2>Nihai Müşteri Teklifi (KDV Hariç)</h2>
-                <div class="amount" id="finalQuoteText">0 ₺</div>
+            <h3 style="margin-bottom: 20px; font-weight: normal; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px;">Fiyat Analizi</h3>
+            
+            <div class="result-row" style="color: rgba(255,255,255,0.7);">
+                <span>Doğrudan İşçilik (İç Maliyet):</span>
+                <strong id="laborCostText">0 ₺</strong>
+            </div>
+            <div class="result-row" style="color: rgba(255,255,255,0.7);">
+                <span>Genel Giderler (%30 Sabit):</span>
+                <strong id="overheadText">0 ₺</strong>
+            </div>
+            <div class="result-row" style="color: var(--warning); border-bottom: 2px dashed rgba(255,255,255,0.2); padding-bottom: 15px; margin-bottom: 10px;">
+                <span>Ofis Net Kârı:</span>
+                <strong id="netProfitText">0 ₺</strong>
             </div>
 
-            <div class="breakdown">
-                <div class="breakdown-item">
-                    <span>Hesaba Katılan Kapsam Oranı:</span>
-                    <strong id="totalScopeText">%50</strong>
-                </div>
-                <div class="breakdown-item">
-                    <span>Doğrudan İşçilik (Çizim/Tasarım):</span>
-                    <strong id="laborCostText">0 ₺</strong>
-                </div>
-                <div class="breakdown-item">
-                    <span>Genel Giderler (%30 Sabit):</span>
-                    <strong id="overheadText">0 ₺</strong>
-                </div>
-                <div class="breakdown-item" style="color: var(--warning);">
-                    <span>Ofis Net Kârı:</span>
-                    <strong id="netProfitText">0 ₺</strong>
-                </div>
+            <div class="result-row">
+                <span>Ara Toplam (Hizmet Bedeli):</span>
+                <strong id="subTotalText">0 ₺</strong>
             </div>
-
-            <!-- Görsel Bar Grafiği -->
-            <div class="chart-container" title="Maliyet ve Kâr Dağılımı">
-                <div id="barLabor" class="chart-segment" style="background-color: var(--accent); width: 45%;">İşçilik</div>
-                <div id="barOverhead" class="chart-segment" style="background-color: #95A5A6; width: 25%;">Gider</div>
-                <div id="barProfit" class="chart-segment" style="background-color: var(--warning); width: 30%;">Kâr</div>
+            <div class="result-row">
+                <span>Hesaplanan KDV (<span id="vatLabel">%20</span>):</span>
+                <strong id="vatAmountText">0 ₺</strong>
             </div>
             
-            <!-- PDF İndir Butonu -->
-            <button id="downloadPdfBtn" class="download-btn">
+            <div class="result-row grand-total">
+                <span>MÜŞTERİ TEKLİFİ:</span>
+                <span id="grandTotalText">0 ₺</span>
+            </div>
+
+            <button id="downloadPdfBtn" class="download-btn" style="margin-top: 30px;">
                 <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-                Teklifi PDF Olarak İndir
+                Müşteri İçin Şık PDF İndir
             </button>
         </div>
     </div>
     
     <footer>
-        Geliştirici: Yakup Daşdemir | Özel Mimari Yazılım Çözümleri
+        Yakup Daşdemir | Özel Mimari Yazılım Çözümleri
     </footer>
 </div>
 
+<!-- 2. GİZLİ PDF ŞABLONU (Sadece Müşteriye Gidecek Olan Temiz Çıktı) -->
+<div id="pdf-template-wrapper">
+    <div id="pdf-template">
+        <!-- PDF Başlık -->
+        <div class="pdf-header">
+            <svg class="pdf-header-icon" viewBox="0 0 24 24"><path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2zm0 2.83L19.17 12h-2.17v6h-2v-4h-6v4H7v-6H4.83L12 4.83z"/></svg>
+            <div class="pdf-brand">
+                <h1>YAKUP DAŞDEMİR</h1>
+                <p>MİMARİ PROJE VE TASARIM OFİSİ</p>
+            </div>
+            <div class="pdf-meta">
+                <h2>FİYAT TEKLİFİ</h2>
+                <p id="pdfDateText">Tarih: 15.09.2026</p>
+            </div>
+        </div>
+
+        <!-- 1. Proje Bilgileri -->
+        <h3 class="pdf-section-title">1. Proje Bilgileri</h3>
+        <table class="pdf-table">
+            <tr>
+                <td style="width: 40%; font-weight: bold; color: #7f8c8d;">Proje Tipi / Alanı:</td>
+                <td id="pdfAreaText">500 m² Mimari Proje</td>
+            </tr>
+        </table>
+
+        <!-- 2. Hizmet Kapsamı -->
+        <h3 class="pdf-section-title">2. Kapsama Dahil Edilen Hizmetler</h3>
+        <ul class="pdf-scope-list" id="pdfScopeList">
+            <!-- JS Tarafından Dinamik Doldurulacak -->
+        </ul>
+
+        <!-- 3. Fiyatlandırma -->
+        <h3 class="pdf-section-title" style="margin-top: 50px;">3. Fiyatlandırma Detayları</h3>
+        <table class="pdf-table" style="margin-top: 20px;">
+            <tr>
+                <td>Hizmet Bedeli (Ara Toplam)</td>
+                <td id="pdfSubTotal">0 ₺</td>
+            </tr>
+            <tr>
+                <td>KDV Bedeli (<span id="pdfVatLabel">%20</span>)</td>
+                <td id="pdfVatAmount">0 ₺</td>
+            </tr>
+            <tr class="pdf-grand-row">
+                <td>GENEL TOPLAM</td>
+                <td id="pdfGrandTotal">0 ₺</td>
+            </tr>
+        </table>
+
+        <!-- PDF Footer -->
+        <div class="pdf-footer">
+            <p style="margin-bottom: 5px; font-weight: bold; color: #2C3E50;">Bu belge resmi bir sözleşme olmayıp, düzenlendiği tarihten itibaren 15 gün süreyle geçerli fiyat teklifidir.</p>
+            <p><strong>E-Posta:</strong> dasdemiryakup88@gmail.com | kmedi9791@gmail.com</p>
+            <p><strong>Adres:</strong> Ankara, Türkiye</p>
+        </div>
+    </div>
+</div>
+
 <script>
-    // DOM Elementlerini Seçme
+    // --- DOM ELEMENTLERİ ---
     const areaInput = document.getElementById('area');
     const unitCostInput = document.getElementById('unitCost');
     const profitSlider = document.getElementById('profitMargin');
+    const vatSelect = document.getElementById('vatRate');
     const profitVal = document.getElementById('profitVal');
     const scopeCheckboxes = document.querySelectorAll('.scope-cb');
-    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
-
-    // Formatlayıcı
+    
+    // UI Formatlayıcı (Para Birimi)
     const formatTRY = (num) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(num);
 
     function calculate() {
-        // Değerleri Al
+        // 1. Girdileri Oku
         const area = parseFloat(areaInput.value) || 0;
         const unitCost = parseFloat(unitCostInput.value) || 0;
         const profitRate = parseFloat(profitSlider.value) / 100;
+        const vatRate = parseFloat(vatSelect.value);
+        
         profitVal.textContent = '%' + profitSlider.value;
+        const vatPercentageText = vatRate === 0 ? 'Hariç' : '%' + (vatRate * 100);
 
-        // Kapsam Yüzdesini Hesapla
-        let selectedScope = 0;
-        scopeCheckboxes.forEach(cb => { if(cb.checked) selectedScope += parseFloat(cb.value); });
+        // 2. Kapsam Yüzdesini ve Seçili İsimleri Çıkar
+        let selectedScopeRate = 0;
+        let selectedServiceNames = [];
+        scopeCheckboxes.forEach(cb => { 
+            if(cb.checked) {
+                selectedScopeRate += parseFloat(cb.value); 
+                selectedServiceNames.push(cb.getAttribute('data-name'));
+            }
+        });
         
-        // --- Çekirdek Algoritma ---
-        const baseProjectCost = area * unitCost; // 1. Taban Maliyet
-        const overheadFixedRate = 0.30; // Genel giderler için %30 sabit eklenti
-        
-        // İşçilik ve Genel Giderlerin Tam Kapsam Maliyeti
+        // 3. Maliyet ve Kâr Algoritması (İç Hesap)
+        const baseProjectCost = area * unitCost; 
+        const overheadFixedRate = 0.30; 
         const totalFullCost = baseProjectCost + (baseProjectCost * overheadFixedRate); 
         
-        // Seçilen Kapsama Göre İndirgenmiş Maliyetler
-        const scopeTotalCost = totalFullCost * selectedScope;
-        const laborCost = (baseProjectCost * selectedScope);
-        const overheadCost = (baseProjectCost * overheadFixedRate) * selectedScope;
+        const laborCost = (baseProjectCost * selectedScopeRate);
+        const overheadCost = (baseProjectCost * overheadFixedRate) * selectedScopeRate;
+        const scopeTotalCost = totalFullCost * selectedScopeRate;
         
-        // Kâr Hesabı ve Nihai Teklif
         const netProfit = scopeTotalCost * profitRate;
-        const finalQuote = scopeTotalCost + netProfit;
+        
+        // 4. Müşteri Fiyatları (Ara Toplam, KDV, Genel Toplam)
+        const subTotal = scopeTotalCost + netProfit; // Hizmet Bedeli
+        const vatAmount = subTotal * vatRate;
+        const grandTotal = subTotal + vatAmount;
 
-        // --- Arayüzü Güncelle ---
-        document.getElementById('totalScopeText').textContent = '%' + Math.round(selectedScope * 100);
-        document.getElementById('finalQuoteText').textContent = formatTRY(finalQuote);
+        // --- A. EKRAN ARAYÜZÜNÜ GÜNCELLE ---
         document.getElementById('laborCostText').textContent = formatTRY(laborCost);
         document.getElementById('overheadText').textContent = formatTRY(overheadCost);
         document.getElementById('netProfitText').textContent = formatTRY(netProfit);
+        
+        document.getElementById('vatLabel').textContent = vatPercentageText;
+        document.getElementById('subTotalText').textContent = formatTRY(subTotal);
+        document.getElementById('vatAmountText').textContent = formatTRY(vatAmount);
+        document.getElementById('grandTotalText').textContent = formatTRY(grandTotal);
 
-        // Görsel Bar Grafiği Güncelleme (Yüzdeler)
-        if (finalQuote > 0) {
-            document.getElementById('barLabor').style.width = (laborCost / finalQuote * 100) + '%';
-            document.getElementById('barOverhead').style.width = (overheadCost / finalQuote * 100) + '%';
-            document.getElementById('barProfit').style.width = (netProfit / finalQuote * 100) + '%';
+        // --- B. GİZLİ PDF ŞABLONUNU GÜNCELLE ---
+        // Tarih
+        const today = new Date().toLocaleDateString('tr-TR');
+        document.getElementById('pdfDateText').textContent = `Tarih: ${today}`;
+        
+        // Alan Bilgisi
+        document.getElementById('pdfAreaText').textContent = `${area} m² Toplam İnşaat Alanı`;
+        
+        // Hizmet Kapsamı Listesi
+        const pdfScopeUl = document.getElementById('pdfScopeList');
+        pdfScopeUl.innerHTML = ''; // Temizle
+        if (selectedServiceNames.length > 0) {
+            selectedServiceNames.forEach(service => {
+                const li = document.createElement('li');
+                li.textContent = service;
+                pdfScopeUl.appendChild(li);
+            });
         } else {
-            document.getElementById('barLabor').style.width = '0%';
-            document.getElementById('barOverhead').style.width = '0%';
-            document.getElementById('barProfit').style.width = '0%';
+            pdfScopeUl.innerHTML = '<li>Seçili hizmet bulunmamaktadır.</li>';
         }
+
+        // Fiyatlar
+        document.getElementById('pdfVatLabel').textContent = vatPercentageText;
+        document.getElementById('pdfSubTotal').textContent = formatTRY(subTotal);
+        document.getElementById('pdfVatAmount').textContent = formatTRY(vatAmount);
+        document.getElementById('pdfGrandTotal').textContent = formatTRY(grandTotal);
     }
 
-    // PDF Oluşturma Fonksiyonu
-    downloadPdfBtn.addEventListener('click', () => {
-        const element = document.getElementById('pdf-content');
+    // PDF İndirme Fonksiyonu
+    document.getElementById('downloadPdfBtn').addEventListener('click', () => {
+        // PDF'e çevrilecek olan gizli div'i seç
+        const element = document.getElementById('pdf-template');
         
-        // PDF'te butonun görünmemesi için geçici olarak gizle
-        downloadPdfBtn.style.display = 'none';
-
-        // html2pdf ayarları
+        // Müşteri ismini PDF adına eklemek istersen 'Mimari_Teklif.pdf' kısmını değiştirebilirsin
         const opt = {
-            margin:       10,
+            margin:       0, // Zaten CSS'de padding verdik
             filename:     'Mimari_Teklif_Yakup_Dasdemir.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
+            image:        { type: 'jpeg', quality: 1.0 },
+            html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // PDF'i oluştur ve kaydet
-        html2pdf().set(opt).from(element).save().then(() => {
-            // İndirme tamamlandıktan sonra butonu tekrar görünür yap
-            downloadPdfBtn.style.display = 'flex';
-        });
+        // html2pdf, absolute position ile gizlenmiş div'i ekranı bozmadan render edebilir.
+        html2pdf().set(opt).from(element).save();
     });
 
-    // Event Listener'ları Ekle
-    [areaInput, unitCostInput, profitSlider].forEach(el => {
+    // Olay Dinleyicileri (Event Listeners)
+    [areaInput, unitCostInput, profitSlider, vatSelect].forEach(el => {
         el.addEventListener('input', calculate);
     });
     scopeCheckboxes.forEach(cb => {
         cb.addEventListener('change', calculate);
     });
 
-    // İlk Yüklemede Hesapla
+    // Sayfa Yüklendiğinde İlk Hesabı Yap
     calculate();
 </script>
 
